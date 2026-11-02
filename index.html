@@ -3,6 +3,8 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Metal+Mania&family=Chakra+Petch:wght@500;700&display=swap">
 <style>
+/* anything marked hidden is hidden, everywhere (the live server page has no reset that does this for us) */
+[hidden]{display:none!important}
 /* Layout: arcade cabinet — a 16:9 fighting pit on top, touch pad underneath on phones, menu as a full-screen select screen */
 :root{
   --void:#070908; --stone:#141a16; --slab:#1e2620; --moss:#33463a; --blood:#c3101b; --gore:#7a0812;
@@ -209,7 +211,7 @@ body.touch .kb,body:not(.touch) .tc{display:none}
     <button class="chip" id="mus" aria-pressed="true">Music on</button>
     <button class="chip" id="snd" aria-pressed="true">Sound on</button>
     <button class="chip" id="tomenu">Menu</button>
-    <span id="ver" title="Game version">v11.02</span>
+    <span id="ver" title="Game version">v11.02b</span>
   </div>
 </div>
 
