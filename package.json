@@ -1,0 +1,16 @@
+{
+  "name": "mortal-frogbat",
+  "version": "1.0.0",
+  "description": "Mortal Kombat style frog vs toad fighting game for Telegram Mini Apps",
+  "type": "module",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "ALLOW_GUESTS=1 node server.js"
+  },
+  "engines": { "node": ">=18" },
+  "dependencies": {
+    "grammy": "^1.30.0",
+    "ws": "^8.18.0"
+  }
+}
