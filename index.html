@@ -1426,6 +1426,8 @@ function boot(){
   if(tgFS){tgw.onEvent('fullscreenChanged',showFS);tgw.onEvent('fullscreenFailed',()=>{$('fst').textContent='Full screen not available';setTimeout(showFS,2500)});tgw.onEvent('viewportChanged',()=>setTimeout(fit,50))}
   ['fullscreenchange','webkitfullscreenchange'].forEach(t=>document.addEventListener(t,showFS));
   showFS();
+  // open in full screen automatically inside Telegram (phone and desktop); the button still switches it off and on
+  if(tgFS&&!isFS())setTimeout(()=>{try{tgw.requestFullscreen()}catch(e){}},300);
   window.addEventListener('resize',fit);fit();
 
   // ---- input
