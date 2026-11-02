@@ -260,8 +260,8 @@ const FIGHTERS = ['Kiki', 'Riri'];
 const STALE_MS = 20 * 60e3; // an untouched waiting pit is replaced after 20 minutes
 
 function newRoom(id, chatId = null) {
-  return { id, chatId, state: 'open', players: [null, null], specs: new Set(), seed: 0, frames: [], pend: [new Map(), new Map()],
-    next: 0, results: [null, null], announced: false, timer: null, lastActive: Date.now() };
+  return { id, chatId, state: 'open', players: [null, null], specs: new Set(), seed: 0, frames: [], held: [0, 0], tap: [0, 0],
+    next: 0, t0: 0, results: [null, null], announced: false, timer: null, lastActive: Date.now() };
 }
 // ---------- group chats ----------
 // Profile links carry an opaque key for the group they came from, so the profile can show that group's lobby.
@@ -310,7 +310,8 @@ const who = (r, s, nm) => `<b>${esc(nm[s] || FIGHTERS[s])}</b> (${FIGHTERS[s]})`
 const CLOSED = 'This fight is over. Type /duke in the chat to open a new pit.';
 
 function startMatch(r) {
-  r.state = 'live'; r.seed = crypto.randomInt(1, 2 ** 31 - 1); r.frames = []; r.pend = [new Map(), new Map()]; r.next = 0;
+  r.state = 'live'; r.seed = crypto.randomInt(1, 2 ** 31 - 1); r.frames = []; r.held = [0, 0]; r.tap = [0, 0]; r.next = 0;
+  r.t0 = Date.now(); liveRooms.add(r);
   r.results = [null, null]; r.names = names(r); r.users = r.players.map(p => p.user); r.avatars = r.users.map(avatarUrl); r.skins = r.users.map((u, i) => equippedSkin(u, SIDE_CH[i])); r.recorded = false;
   for (const ws of everyone(r)) send(ws, { t: 'start', seed: r.seed, names: r.names, avatars: r.avatars, skins: r.skins, role: roleOf(r, ws) });
 }
@@ -348,21 +349,35 @@ function fillSlots(r) {
   }
 }
 
+// ---------- match clock ----------
+// The server runs every live fight at 60 frames a second. Each frame uses each player's latest buttons (plus any
+// quick tap since the previous frame), so nobody ever waits for the other player's connection. Frames are streamed
+// to both players and every spectator in small batches; everyone plays the identical frames, so the fight is identical.
+const FRAME_MS = 1000 / 60, MAX_FRAMES = 60 * 60 * 4;   // safety cap: 4 minutes
+const liveRooms = new Set();
 function onInput(r, ws, m) {
   const s = r.players.indexOf(ws);
   if (s < 0 || r.state !== 'live') return;
-  const f = m.f | 0, b = (m.b | 0) & 511;
-  if (f < r.next || f > r.next + 240) return;
-  r.pend[s].set(f, b);
-  while (r.pend[0].has(r.next) && r.pend[1].has(r.next)) {
-    const a = r.pend[0].get(r.next), c = r.pend[1].get(r.next);
-    r.pend[0].delete(r.next); r.pend[1].delete(r.next);
-    r.frames.push([a, c]);
-    broadcast(r, { t: 'fr', f: r.next, a, b: c });
-    r.next++;
-  }
+  r.held[s] = (m.b | 0) & 511;
+  r.tap[s] |= (m.tap | 0) & 511;
   r.lastActive = Date.now();
 }
+function pump() {
+  const now = Date.now();
+  for (const r of liveRooms) {
+    if (r.state !== 'live' || r.frames.length >= MAX_FRAMES) { liveRooms.delete(r); continue; }
+    const due = Math.min(MAX_FRAMES, Math.floor((now - r.t0) / FRAME_MS));
+    if (due <= r.next) continue;
+    const first = r.next, batch = [];
+    while (r.next < due) {
+      const fr = [r.held[0] | r.tap[0], r.held[1] | r.tap[1]];
+      r.tap = [0, 0];
+      r.frames.push(fr); batch.push(fr); r.next++;
+    }
+    broadcast(r, { t: 'fb', f: first, d: batch });
+  }
+}
+setInterval(pump, 8);
 
 let bot = null;
 function announce(r, html) {
