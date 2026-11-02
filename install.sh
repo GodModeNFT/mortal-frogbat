@@ -49,6 +49,7 @@ say "Getting the game code"
 id frogbat >/dev/null 2>&1 || useradd --system --home "$APP_DIR" --shell /usr/sbin/nologin frogbat
 CLONE_URL=$REPO_URL
 if [ -n "${GIT_TOKEN:-}" ]; then CLONE_URL=$(echo "$REPO_URL" | sed "s#https://#https://x-access-token:${GIT_TOKEN}@#"); fi
+git config --global --get-all safe.directory 2>/dev/null | grep -qx "$APP_DIR" || git config --global --add safe.directory "$APP_DIR"  # the folder is owned by the frogbat user; let root update it
 if [ -d "$APP_DIR/.git" ]; then
   git -C "$APP_DIR" remote set-url origin "$CLONE_URL"
   git -C "$APP_DIR" fetch -q origin && git -C "$APP_DIR" reset -q --hard origin/HEAD
