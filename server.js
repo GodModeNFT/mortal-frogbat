@@ -132,11 +132,13 @@ function leaderboard(meId) {
   return { players: rows.slice(0, 100).map(pub), you: meIdx >= 0 ? pub(rows[meIdx], meIdx) : null, total: rows.length };
 }
 
-const MUSIC_DIR = new URL('./public/music/', import.meta.url).pathname;
-fs.mkdirSync(MUSIC_DIR, { recursive: true });
+// Works with the files in folders (public/index.html, public/music/) or all at the top of the repo.
+const ROOT = new URL('./', import.meta.url).pathname;
+const PUB = fs.existsSync(path.join(ROOT, 'public', 'index.html')) ? path.join(ROOT, 'public') : ROOT;
+const MUSIC_DIR = path.resolve(fs.existsSync(path.join(PUB, 'music')) ? path.join(PUB, 'music') : PUB) + path.sep;
 
 // ---------- static page ----------
-const raw = fs.readFileSync(new URL('./public/index.html', import.meta.url), 'utf8');
+const raw = fs.readFileSync(path.join(PUB, 'index.html'), 'utf8');
 const page = '<!doctype html><html lang="en"><head><meta charset="utf-8">' +
   '<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no">' +
   '<script src="https://telegram.org/js/telegram-web-app.js"></script>' +
