@@ -211,7 +211,7 @@ body.touch .kb,body:not(.touch) .tc{display:none}
     <button class="chip" id="mus" aria-pressed="true">Music on</button>
     <button class="chip" id="snd" aria-pressed="true">Sound on</button>
     <button class="chip" id="tomenu">Menu</button>
-    <span id="ver" title="Game version">v11.02b</span>
+    <span id="ver" title="Game version">v11.09</span>
   </div>
 </div>
 
@@ -354,7 +354,7 @@ for(const ch of ['frog','toad'])if(OFFWINS[ch]<SKIN_REQ[OFFSKIN[ch]])OFFSKIN[ch]
 const charOf=s=>skinChar(SIDE_CH[s],SKIN_EQ[s]);
 const MAX_HP=200;   // one match: 2x a classic round (was 250, cut 20%)
 const FATAL_HP=MAX_HP*0.1; // the last chunk of the health bar (10%): press F while the opponent is in it
-const CLOCK=99*60;  // 99-second match clock
+const CLOCK=180*60; // 3-minute match clock
 const WAKE_INV=60;  // after getting up from a knockdown: 1 second where they can't be hit, so they can jump or walk away
 const FAT_DIST={frog:[170,190,170],toad:[170,150,150]};
 
@@ -1197,8 +1197,8 @@ function hud(G){
     X.font='700 17px "Chakra Petch", Verdana, sans-serif';X.textBaseline='top';X.textAlign=s?'right':'left';X.lineWidth=4;X.strokeStyle='#000';
     const label=c.name+(NAMES[s]?'  ·  '+NAMES[s]:'');X.strokeText(label,s?x0+bw:x0,y+31);X.fillStyle='#ebe3cb';X.fillText(label,s?x0+bw:x0,y+31);
   }
-  ell(480,31,30,24,'#0b0e0c','#3d5143',2);X.font='700 28px "Chakra Petch", Verdana, sans-serif';X.textAlign='center';X.textBaseline='middle';X.fillStyle='#ebe3cb';
-  X.fillText(String(Math.max(0,Math.ceil(G.timer/60))),480,32);
+  ell(480,31,36,24,'#0b0e0c','#3d5143',2);X.font='700 24px "Chakra Petch", Verdana, sans-serif';X.textAlign='center';X.textBaseline='middle';X.fillStyle='#ebe3cb';
+  {const t=Math.max(0,Math.ceil(G.timer/60));X.fillText(`${Math.floor(t/60)}:${String(t%60).padStart(2,'0')}`,480,32)}  // shown as minutes:seconds
 }
 function announcer(G){
   const nm=s=>CH[SIDE_CH[s]].name;
